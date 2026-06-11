@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloomOS — Your Life, Commanded</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap');
+
+  :root {
+    --ink: #1a1612;
+    --ivory: #f7f3ed;
+    --parchment: #ede7dd;
+    --gold: #b8903a;
+    --gold-light: #d4aa5a;
+    --terracotta: #8b4a2f;
+    --sage: #5a6b52;
+    --sage-light: #8fa386;
+    --dust: #9a8e82;
+    --night: #0e0c0a;
+    --border: #2a2520;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--night);
+    color: var(--ivory);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .screen { display: none; min-height: 100vh; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* ── LOCK SCREEN ── */
+  #screen-lock {
+    background: var(--night);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  #screen-lock::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 20%, #b8903a18 0%, transparent 70%),
+      radial-gradient(ellipse 40% 50% at 20% 80%, #5a6b5212 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .lock-time {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(5rem, 18vw, 9rem);
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    color: var(--ivory);
+    line-height: 1;
+    margin-bottom: 0.2em;
+  }
+  .lock-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 3rem;
+  }
+  .lock-greeting {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.35rem;
+    color: var(--dust);
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+  .lock-enter-btn {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.85rem 2.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .lock-enter-btn:hover { background: var(--gold); color: var(--night); }
+
+  /* ── HOME SCREEN ── */
+  #screen-home { background: var(--night); padding: 0; }
+  .home-top {
+    padding: 2.5rem 1.5rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .home-wordmark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .home-wordmark span {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--dust);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .home-actions { display: flex; gap: 0.6rem; align-items: center; }
+  .icon-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+    background: #141210;
+    color: var(--dust);
+  }
+  .icon-btn:hover { transform: scale(1.08); color: var(--gold); border-color: var(--gold); }
+  .steward-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--terracotta) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--night);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .steward-avatar:hover { transform: scale(1.08); }
+
+  .steward-strip {
+    margin: 0 1.5rem 1.5rem;
+    border: 1px solid #b8903a30;
+    border-radius: 2px;
+    background: linear-gradient(135deg, #b8903a0a 0%, transparent 100%);
+    padding: 1rem 1.2rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .steward-strip:hover { border-color: #b8903a60; }
+  .steward-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.4rem;
+  }
+  .steward-preview {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--dust);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--dust);
+    padding: 0 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .six-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    margin: 0 1.5rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .six-btn {
+    background: #141210;
+    padding: 1.5rem 1.2rem;
+    cursor: pointer;
+    border: none;
+    text-align: left;
+    transition: background 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+  }
+  .six-btn:hover { background: #1e1a16; }
+  .six-btn-icon { font-size: 1.4rem; line-height: 1; }
+  .six-btn-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--ivory);
+  }
+  .six-btn-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.65rem;
+    color: var(--dust);
+    font-weight: 300;
+  }
+  .accent-bar {
+    position: absolute; bottom: 0; left: 0;
+    width: 0; height: 2px;
+    transition: width 0.3s ease;
+  }
+  .six-btn:hover .accent-bar { width: 100%; }
+  .court-accent { background: var(--gold); }
+  .body-accent { background: var(--sage); }
+  .children-accent { background: #c97a3a; }
+  .house-accent { background: var(--terracotta); }
+  .money-accent { background: #4a7a5a; }
+  .peace-accent { background: #7a5a8a; }
+
+  .status-row {
+    display: flex; gap: 0.5rem;
+    padding: 0 1.5rem;
+    margin-bottom: 1.8rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .status-row::-webkit-scrollbar { display: none; }
+  .status-pill {
+    flex-shrink: 0;
+    background: #1a1612;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.4rem 0.9rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--dust);
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .status-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sage-light); }
+  .status-dot.alert { background: #c97a3a; }
+  .status-dot.urgent { background: #c94040; }
+
+  .moon-row {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .moon-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--dust);
+    font-weight: 300;
+  }
+  .moon-text strong { color: var(--ivory); font-style: normal; font-weight: 400; }
+
+  .home-footer {
+    padding: 1.5rem;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    color: #3a3530;
+    text-transform: uppercase;
+  }
+
+  /* ── STEWARD SCREEN ── */
+  #screen-steward { background: var(--night); padding: 0; overflow-y: auto; }
+  .steward-header {
+    padding: 2.5rem 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .back-btn {
+    background: none; border: none;
+    color: var(--dust);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 1.5rem; padding: 0;
+  }
+  .back-btn:hover { color: var(--gold); }
+  .steward-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .steward-salutation {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 5vw, 2.1rem);
+    font-weight: 300;
+    color: var(--ivory);
+    line-height: 1.2;
+  }
+  .steward-salutation em { font-style: italic; color: var(--gold-light); }
+
+  .steward-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .brief-card {
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: #0f0d0b;
+    overflow: hidden;
+  }
+  .brief-card-head {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0.9rem 1.1rem 0.7rem;
+    border-bottom: 1px solid #1e1a16;
+  }
+  .brief-card-icon { font-size: 1rem; }
+  .brief-card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    flex: 1;
+  }
+  .brief-card-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    color: var(--dust);
+    border: 1px solid var(--border);
+    padding: 0.2rem 0.5rem;
+  }
+  .brief-card-body { padding: 0.8rem 1.1rem 1rem; }
+  .brief-item {
+    display: flex; gap: 0.7rem; align-items: flex-start;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid #1a1612;
+  }
+  .brief-item:last-child { border-bottom: none; }
+  .brief-item-marker {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gold);
+    margin-top: 3px;
+    flex-shrink: 0; width: 14px;
+  }
+  .brief-item-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--ivory);
+    font-weight: 300;
+    line-height: 1.5;
+    flex: 1;
+  }
+  .brief-item-text strong { font-weight: 500; }
+  .brief-item-check {
+    width: 18px; height: 18px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    font-size: 0.6rem;
+    color: transparent;
+  }
+  .brief-item-check.done { background: var(--sage); border-color: var(--sage); color: white; }
+
+  .ordinis-issues { font-size: 0.75rem; color: var(--dust); font-style: italic; padding: 0.3rem 0 0; }
+
+  .generate-btn {
+    margin: 0 1.5rem 1rem;
+    background: linear-gradient(135deg, #b8903a15 0%, transparent 100%);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 1rem;
+    cursor: pointer;
+    width: calc(100% - 3rem);
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  }
+  .generate-btn:hover { background: linear-gradient(135deg, #b8903a25 0%, transparent 100%); }
+  .generate-btn.loading { opacity: 0.6; cursor: wait; }
+
+  .spinner {
+    width: 12px; height: 12px;
+    border: 1.5px solid var(--gold);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+  }
+  .loading .spinner { display: block; }
+  .loading .btn-txt { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ai-response {
+    margin: 0 1.5rem 1.5rem;
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--gold);
+    background: #0c0a08;
+    padding: 1.2rem;
+    display: none;
+  }
+  .ai-response.visible { display: block; }
+  .ai-response-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.8rem;
+  }
+  .ai-response-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--dust);
+    line-height: 1.7;
+    font-weight: 300;
+    white-space: pre-wrap;
+  }
+
+  /* ── SETTINGS SCREEN ── */
+  #screen-settings { background: var(--night); padding: 0; overflow-y: auto; }
+  .settings-header {
+    padding: 2.5rem 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .settings-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: var(--ivory);
+  }
+  .settings-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.2rem; }
+  .settings-section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .settings-card {
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: #0f0d0b;
+    padding: 1.2rem;
+  }
+  .settings-card p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    color: var(--dust);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    font-weight: 300;
+  }
+  .settings-input {
+    width: 100%;
+    background: #1a1612;
+    border: 1px solid var(--border);
+    color: var(--ivory);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .settings-input:focus { border-color: var(--gold); }
+  .settings-input::placeholder { color: #3a3530; }
+  .settings-save-btn {
+    background: var(--gold);
+    border: none;
+    color: var(--night);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .settings-save-btn:hover { opacity: 0.85; }
+  .settings-status {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    margin-top: 0.75rem;
+    display: none;
+  }
+  .settings-status.ok { color: var(--sage-light); display: block; }
+  .settings-status.err { color: #c94040; display: block; }
+
+  .connection-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--dust);
+    border: 1px solid var(--border);
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    margin-top: 0.5rem;
+  }
+  .connection-badge.connected { color: var(--sage-light); border-color: var(--sage); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .screen.active .six-btn { animation: fadeUp 0.4s ease both; }
+  .six-btn:nth-child(1) { animation-delay: 0.05s; }
+  .six-btn:nth-child(2) { animation-delay: 0.1s; }
+  .six-btn:nth-child(3) { animation-delay: 0.15s; }
+  .six-btn:nth-child(4) { animation-delay: 0.2s; }
+  .six-btn:nth-child(5) { animation-delay: 0.25s; }
+  .six-btn:nth-child(6) { animation-delay: 0.3s; }
+
+  @media (max-width: 380px) {
+    .lock-time { font-size: 5.5rem; }
+    .steward-salutation { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="screen-lock" class="screen active">
+  <div class="lock-time" id="lock-time">—</div>
+  <div class="lock-date" id="lock-date">Loading</div>
+  <p class="lock-greeting">Good morning, Your Worship.</p>
+  <button class="lock-enter-btn" onclick="goHome()">Enter</button>
+</div>
+
+<!-- HOME SCREEN -->
+<div id="screen-home" class="screen">
+  <div class="home-top">
+    <div class="home-wordmark">
+      BloomOS
+      <span>Your Life, Commanded</span>
+    </div>
+    <div class="home-actions">
+      <div class="icon-btn" onclick="goSettings()" title="Settings">⚙</div>
+      <div class="steward-avatar" onclick="goSteward()" title="The Steward">✦</div>
+    </div>
+  </div>
+
+  <div class="moon-row">
+    <span style="font-size:1.2rem">🌒</span>
+    <span class="moon-text"><strong id="home-date">Thursday</strong> — Waxing Crescent. A good day for momentum.</span>
+  </div>
+
+  <div class="steward-strip" onclick="goSteward()">
+    <div class="steward-label">✦ The Steward</div>
+    <div class="steward-preview">"Your Worship, what needs your attention today?"</div>
+  </div>
+
+  <div class="status-row" id="status-row">
+    <div class="status-pill"><span class="status-dot"></span>3 matters tomorrow</div>
+    <div class="status-pill"><span class="status-dot alert"></span>BP not logged</div>
+    <div class="status-pill" id="ordinis-pill"><span class="status-dot"></span>Ordinis: checking…</div>
+    <div class="status-pill"><span class="status-dot alert"></span>Staff salary due</div>
+  </div>
+
+  <div class="section-label">Your Domains</div>
+
+  <div class="six-grid">
+    <button class="six-btn" onclick="alert('Court & Career — coming soon')">
+      <div class="six-btn-icon">⚖️</div>
+      <div class="six-btn-label">Today's Court</div>
+      <div class="six-btn-sub">3 matters · 2 adjournments</div>
+      <div class="accent-bar court-accent"></div>
+    </button>
+    <button class="six-btn" onclick="alert('Health & Wellness — coming soon')">
+      <div class="six-btn-icon">🌿</div>
+      <div class="six-btn-label">My Body</div>
+      <div class="six-btn-sub">BP · Gut reset · Fitness</div>
+      <div class="accent-bar body-accent"></div>
+    </button>
+    <button class="six-btn" onclick="alert('Children — coming soon')">
+      <div class="six-btn-icon">🌟</div>
+      <div class="six-btn-label">My Children</div>
+      <div class="six-btn-sub">School · Therapy · Milestones</div>
+      <div class="accent-bar children-accent"></div>
+    </button>
+    <button class="six-btn" onclick="alert('Household — coming soon')">
+      <div class="six-btn-icon">🏛️</div>
+      <div class="six-btn-label">My House</div>
+      <div class="six-btn-sub">Staff · Supplies · Maintenance</div>
+      <div class="accent-bar house-accent"></div>
+    </button>
+    <button class="six-btn" onclick="alert('Financial — coming soon')">
+      <div class="six-btn-icon">₦</div>
+      <div class="six-btn-label">My Money</div>
+      <div class="six-btn-sub">Income · Savings · Ordinis</div>
+      <div class="accent-bar money-accent"></div>
+    </button>
+    <button class="six-btn" onclick="alert('Peace & Spirit — coming soon')">
+      <div class="six-btn-icon">🕯️</div>
+      <div class="six-btn-label">My Peace</div>
+      <div class="six-btn-sub">Prayer · Ritual · Reflection</div>
+      <div class="accent-bar peace-accent"></div>
+    </button>
+  </div>
+
+  <div class="home-footer">BloomOS · Private · Encrypted · Yours</div>
+</div>
+
+<!-- STEWARD SCREEN -->
+<div id="screen-steward" class="screen">
+  <div class="steward-header">
+    <button class="back-btn" onclick="goHome()">← Home</button>
+    <div class="steward-title">✦ The Steward</div>
+    <div class="steward-salutation">
+      Your Worship,<br>
+      <em>what needs your attention today?</em>
+    </div>
+  </div>
+
+  <div class="steward-body" style="padding-top: 1.5rem;">
+
+    <div class="brief-card">
+      <div class="brief-card-head">
+        <span class="brief-card-icon">⚡</span>
+        <span class="brief-card-label">Top Priorities</span>
+        <span class="brief-card-tag">Today</span>
+      </div>
+      <div class="brief-card-body">
+        <div class="brief-item">
+          <span class="brief-item-marker">01</span>
+          <span class="brief-item-text">Review tomorrow's <strong>cause list</strong> — 3 matters pending</span>
+          <span class="brief-item-check" onclick="toggleCheck(this)">✓</span>
+        </div>
+        <div class="brief-item">
+          <span class="brief-item-marker">02</span>
+          <span class="brief-item-text">Follow up on <strong>Ordinis onboarding</strong> — demo scheduled</span>
+          <span class="brief-item-check" onclick="toggleCheck(this)">✓</span>
+        </div>
+        <div class="brief-item">
+          <span class="brief-item-marker">03</span>
+          <span class="brief-item-text">Check Ovie's <strong>latest school report</strong></span>
+          <span class="brief-item-check" onclick="toggleCheck(this)">✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ordinis live card -->
+    <div class="brief-card" id="ordinis-card">
+      <div class="brief-card-head">
+        <span class="brief-card-icon">🔧</span>
+        <span class="brief-card-label">Ordinis — Open Issues</span>
+        <span class="brief-card-tag" id="ordinis-card-tag">Live</span>
+      </div>
+      <div class="brief-card-body" id="ordinis-card-body">
+        <div class="brief-item">
+          <span class="brief-item-marker">—</span>
+          <span class="brief-item-text" style="color:var(--dust);font-style:italic">Fetching from GitHub…</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="brief-card">
+      <div class="brief-card-head">
+        <span class="brief-card-icon">🌿</span>
+        <span class="brief-card-label">Health</span>
+        <span class="brief-card-tag">Body</span>
+      </div>
+      <div class="brief-card-body">
+        <div class="brief-item">
+          <span class="brief-item-marker">—</span>
+          <span class="brief-item-text">Log your <strong>blood pressure</strong> — not done today</span>
+          <span class="brief-item-check" onclick="toggleCheck(this)">✓</span>
+        </div>
+        <div class="brief-item">
+          <span class="brief-item-marker">—</span>
+          <span class="brief-item-text">Drink <strong>2 glasses of water</strong> before Power Horse</span>
+          <span class="brief-item-check" onclick="toggleCheck(this)">✓</span>
+        </div>
+        <div class="brief-item">
+          <span class="brief-item-marker">—</span>
+          <span class="brief-item-text">Take <strong>morning supplements</strong></span>
+          <span class="brief-item-check" onclick="toggleCheck(this)">✓</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="brief-card">
+      <div class="brief-card-head">
+        <span class="brief-card-icon">₦</span>
+        <span class="brief-card-label">Money</span>
+        <span class="brief-card-tag">Finance</span>
+      </div>
+      <div class="brief-card-body">
+        <div class="brief-item">
+          <span class="brief-item-marker">—</span>
+          <span class="brief-item-text">Review <strong>active subscriptions</strong> — 4 renewing this week</span>
+          <span class="brief-item-check" onclick="toggleCheck(this)">✓</span>
+        </div>
+        <div class="brief-item">
+          <span class="brief-item-marker">—</span>
+          <span class="brief-item-text"><strong>Staff salary</strong> due in 2 days</span>
+          <span class="brief-item-check" onclick="toggleCheck(this)">✓</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="brief-card">
+      <div class="brief-card-head">
+        <span class="brief-card-icon">🕯️</span>
+        <span class="brief-card-label">Peace</span>
+        <span class="brief-card-tag">Spirit</span>
+      </div>
+      <div class="brief-card-body">
+        <div class="brief-item">
+          <span class="brief-item-marker">—</span>
+          <span class="brief-item-text">15 minutes in <strong>prayer, reflection, or quiet</strong> — before court</span>
+          <span class="brief-item-check" onclick="toggleCheck(this)">✓</span>
+        </div>
+        <div class="brief-item">
+          <span class="brief-item-marker">—</span>
+          <span class="brief-item-text">Tonight: <strong>waxing crescent</strong> — set an intention for growth</span>
+          <span class="brief-item-check" onclick="toggleCheck(this)">✓</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <button class="generate-btn" id="generate-btn" onclick="generateLiveBrief()">
+    <span class="spinner"></span>
+    <span class="btn-txt">✦ Ask The Steward Something</span>
+  </button>
+
+  <div class="ai-response" id="ai-response">
+    <div class="ai-response-label">✦ The Steward Responds</div>
+    <div class="ai-response-text" id="ai-response-text"></div>
+  </div>
+
+  <div style="height: 2rem;"></div>
+</div>
+
+<!-- SETTINGS SCREEN -->
+<div id="screen-settings" class="screen">
+  <div class="settings-header">
+    <button class="back-btn" onclick="goHome()">← Home</button>
+    <div class="steward-title">⚙ Settings</div>
+    <div class="settings-title">Connections</div>
+  </div>
+
+  <div class="settings-body">
+
+    <div>
+      <div class="settings-section-label">GitHub — Ordinis Issues</div>
+      <div class="settings-card">
+        <p>Connect your private Ordinis repository so BloomOS can show you live open issue counts. Your token is stored only in this browser — never sent anywhere except GitHub's API.</p>
+
+        <input
+          class="settings-input"
+          type="password"
+          id="gh-token-input"
+          placeholder="ghp_••••••••••••••••••••••••"
+          autocomplete="off"
+        />
+
+        <input
+          class="settings-input"
+          type="text"
+          id="gh-repo-input"
+          placeholder="owner/repo-name"
+          value="Iwedike/Ordinis"
+        />
+
+        <button class="settings-save-btn" onclick="saveGitHubToken()">Save & Test Connection</button>
+
+        <div class="settings-status" id="gh-status"></div>
+
+        <div class="connection-badge" id="gh-badge" style="display:none">
+          <span id="gh-badge-dot" style="width:6px;height:6px;border-radius:50%;background:var(--sage-light);display:inline-block"></span>
+          <span id="gh-badge-text">Not connected</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── Storage keys ──
+  const GH_TOKEN_KEY = 'bloom_gh_token';
+  const GH_REPO_KEY  = 'bloom_gh_repo';
+
+  // ── In-memory store (persists only this session since no localStorage) ──
+  const store = {};
+
+  function storeSet(k, v) { store[k] = v; }
+  function storeGet(k) { return store[k] || null; }
+
+  // ── Clock ──
+  function updateClock() {
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2, '0');
+    const m = now.getMinutes().toString().padStart(2, '0');
+    document.getElementById('lock-time').textContent = `${h}:${m}`;
+    const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const day    = days[now.getDay()];
+    document.getElementById('lock-date').textContent =
+      `${day}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    document.getElementById('home-date').textContent = day;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ── Navigation ──
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function goHome()     { showScreen('screen-home'); }
+  function goSteward()  { showScreen('screen-steward'); fetchOrdinisBrief(); }
+  function goSettings() { showScreen('screen-settings'); loadSettingsUI(); }
+
+  // ── Checkbox ──
+  function toggleCheck(el) { el.classList.toggle('done'); }
+
+  // ── GitHub: save token ──
+  async function saveGitHubToken() {
+    const token = document.getElementById('gh-token-input').value.trim();
+    const repo  = document.getElementById('gh-repo-input').value.trim();
+    const status = document.getElementById('gh-status');
+    const badge  = document.getElementById('gh-badge');
+
+    if (!token || !repo) {
+      status.textContent = 'Please enter both token and repo name.';
+      status.className = 'settings-status err';
+      return;
+    }
+
+    status.textContent = 'Testing connection…';
+    status.className = 'settings-status ok';
+
+    try {
+      const res = await fetch(`https://api.github.com/repos/${repo}/issues?state=open&per_page=5`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+      });
+
+      if (!res.ok) throw new Error(`GitHub returned ${res.status}`);
+
+      const issues = await res.json();
+      storeSet(GH_TOKEN_KEY, token);
+      storeSet(GH_REPO_KEY, repo);
+
+      status.textContent = `✓ Connected. Found ${issues.length} open issue(s).`;
+      status.className = 'settings-status ok';
+
+      badge.style.display = 'inline-flex';
+      document.getElementById('gh-badge-dot').style.background = 'var(--sage-light)';
+      document.getElementById('gh-badge-text').textContent = `${repo} — connected`;
+
+      // Clear the token field for safety
+      document.getElementById('gh-token-input').value = '';
+
+    } catch (err) {
+      status.textContent = `✗ Could not connect: ${err.message}`;
+      status.className = 'settings-status err';
+    }
+  }
+
+  // ── Load settings UI ──
+  function loadSettingsUI() {
+    const repo  = storeGet(GH_REPO_KEY);
+    const token = storeGet(GH_TOKEN_KEY);
+    if (repo) document.getElementById('gh-repo-input').value = repo;
+    const badge = document.getElementById('gh-badge');
+    if (token && repo) {
+      badge.style.display = 'inline-flex';
+      document.getElementById('gh-badge-text').textContent = `${repo} — connected`;
+    }
+  }
+
+  // ── Fetch Ordinis issues for Steward screen ──
+  async function fetchOrdinisBrief() {
+    const token = storeGet(GH_TOKEN_KEY);
+    const repo  = storeGet(GH_REPO_KEY) || 'Iwedike/Ordinis';
+    const cardBody = document.getElementById('ordinis-card-body');
+    const cardTag  = document.getElementById('ordinis-card-tag');
+    const pill     = document.getElementById('ordinis-pill');
+
+    if (!token) {
+      cardBody.innerHTML = `
+        <div class="brief-item">
+          <span class="brief-item-marker">—</span>
+          <span class="brief-item-text" style="color:var(--dust);font-style:italic">
+            No GitHub token saved. Go to ⚙ Settings to connect.
+          </span>
+        </div>`;
+      pill.innerHTML = `<span class="status-dot alert"></span>Ordinis: not connected`;
+      return;
+    }
+
+    cardBody.innerHTML = `
+      <div class="brief-item">
+        <span class="brief-item-marker">—</span>
+        <span class="brief-item-text" style="color:var(--dust);font-style:italic">Fetching from GitHub…</span>
+      </div>`;
+
+    try {
+      const res = await fetch(`https://api.github.com/repos/${repo}/issues?state=open&per_page=5`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+      });
+
+      if (!res.ok) throw new Error(`GitHub ${res.status}`);
+
+      const issues = await res.json();
+      cardTag.textContent = `${issues.length} open`;
+
+      if (issues.length === 0) {
+        cardBody.innerHTML = `
+          <div class="brief-item">
+            <span class="brief-item-marker">—</span>
+            <span class="brief-item-text" style="color:var(--sage-light)">No open issues. All clear.</span>
+          </div>`;
+        pill.innerHTML = `<span class="status-dot"></span>Ordinis: all clear`;
+      } else {
+        cardBody.innerHTML = issues.map((issue, i) => `
+          <div class="brief-item">
+            <span class="brief-item-marker">#${issue.number}</span>
+            <span class="brief-item-text">${escHtml(issue.title)}</span>
+            <span class="brief-item-check" onclick="toggleCheck(this)">✓</span>
+          </div>`).join('');
+        const dotClass = issues.length > 2 ? 'alert' : '';
+        pill.innerHTML = `<span class="status-dot ${dotClass}"></span>Ordinis: ${issues.length} open issue${issues.length !== 1 ? 's' : ''}`;
+      }
+
+    } catch (err) {
+      cardBody.innerHTML = `
+        <div class="brief-item">
+          <span class="brief-item-marker">—</span>
+          <span class="brief-item-text" style="color:#c94040">Could not fetch issues: ${escHtml(err.message)}</span>
+        </div>`;
+      pill.innerHTML = `<span class="status-dot urgent"></span>Ordinis: fetch failed`;
+    }
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── AI Steward brief ──
+  async function generateLiveBrief() {
+    const btn = document.getElementById('generate-btn');
+    const responseDiv  = document.getElementById('ai-response');
+    const responseText = document.getElementById('ai-response-text');
+    btn.classList.add('loading');
+    responseDiv.classList.remove('visible');
+
+    const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+
+    const prompt = `You are The Steward — a dignified, warm, intelligent personal AI assistant for a sitting Magistrate in Delta State, Nigeria named Your Worship. She is also a solo founder building Ordinis (a Nigerian legal intelligence platform), a mother of children including one with autism, and a woman of deep spiritual practice.
+
+Today is ${dayName}. Write a brief, elegant morning reflection of no more than 150 words.
+
+Address her as "Your Worship." Acknowledge the day naturally. Give one court-related reminder, one wellness prompt, one Ordinis/business note, and one line of spiritual encouragement relevant to the waxing crescent moon — a time of building and momentum.
+
+Write in a calm, elegant, slightly formal tone — like a trusted steward who knows her world deeply. No bullet points. Flowing paragraphs only.`;
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.map(b => b.text || '').join('') || 'The Steward is unavailable at this moment.';
+      responseText.textContent = text;
+      responseDiv.classList.add('visible');
+      btn.querySelector('.btn-txt').textContent = '✦ Ask Again';
+    } catch (err) {
+      responseText.textContent = 'The Steward encountered a disturbance. Please try again.';
+      responseDiv.classList.add('visible');
+    } finally {
+      btn.classList.remove('loading');
+    }
+  }
+</script>
+</body>
+</html>
